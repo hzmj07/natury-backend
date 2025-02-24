@@ -38,8 +38,12 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    weeks: [weekSchema], // Haftalık veriler
-    totalPoints: { type: Number, default: 0 } // Toplam puanı kaydet
+    userData:{
+      weeks: [weekSchema], // Haftalık veriler
+    totalPoints: { type: Number, default: 0 },
+    trees : { type: Number, default: 0 }
+    }
+     // Toplam puanı kaydet
   },
   {
     timestamps: true
@@ -50,14 +54,15 @@ const userSchema = new mongoose.Schema(
 // **Kayıttan sonra totalPoints güncelle**
 userSchema.post("save", async function () {
   try {
-    this.totalPoints = this.weeks.reduce((total, week) => {
+    // userData içindeki totalPoints'i güncelle
+    this.userData.totalPoints = this.userData.weeks.reduce((total, week) => {
       return total + week.data.reduce((weekTotal, day) => weekTotal + day.value, 0);
     }, 0);
-    await this.save();
+    await this.save(); // TotalPoints güncellenip kaydedilecek
   } catch (error) {
     console.error("❌ Total points güncellenirken hata oluştu:", error);
   }
-});
+})
 
 // Kullanıcı Modelini Oluştur
 export const User = mongoose.model("User", userSchema, "users");

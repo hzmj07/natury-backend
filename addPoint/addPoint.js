@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import {User} from "../model/user.js"; // User modelini uygun yoldan içe aktar
-import {getStartOfWeek , getTodayDay} from "../costumDef's/def.js";
+import { User } from "../model/user.js"; // User modelini uygun yoldan içe aktar
+import { getStartOfWeek, getTodayDay } from "../costumDef's/def.js";
 
 
 const today = new Date();
@@ -9,45 +9,38 @@ const day = getTodayDay();
 
 
 
-export const updateDailyData = async (userId, additionalValue) => {
+export const upDatePoint = async (userId, additionalValue) => {
   try {
     // Kullanıcıyı bul
-    const user = await User.findOne({ _id: userId });
-    console.log(user);
+    const user = await User.findById(userId);
     if (!user) {
-      console.log("Kullanıcı bulunamadı.");
-      return;
+      throw new Error("Kullanıcı bulunamadı");
     }
 
-    // Güncel haftayı bul
-    let week = user.weeks.find((w) => w.start.toISOString() === weekStart.toISOString());
+    let userWeek = user.userData.weeks;
 
-    // Eğer hafta yoksa yeni bir hafta oluştur
-    if (!week) {
-      week = {
+    if (userWeek.length === 0 || userWeek.at(-1).start.toISOString() !== weekStart.toISOString()) {
+      // Yeni hafta işlemleri
+      console.log("yeni hafta ");
+      const week = {
         start: weekStart,
-        end: new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000), // Haftanın bitiş tarihi
+        end: new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000),
         data: [{ day: day, value: additionalValue }]
       };
-      user.weeks.push(week); 
+      user.userData.weeks.push(week);
       await user.save();
-      return;// Yeni haftayı kullanıcının haftalarına ekle
-    }
-
-    // Gün verisini güncelle
-    const dayData = week.data.find((d) => d.day === day);
-
-    if (dayData) {
-      dayData.value += additionalValue; // Mevcut değere ekleme yap
+      console.log("yeni veri eklendi");
     } else {
-      week.data.push({ day: day, value: additionalValue }); // Yeni gün ekle
+      // Geçerli haftaya ekleme işlemleri
+      const dayData = userWeek.at(-1).data.find((d) => d.day === day);
+      if (dayData) {
+        dayData.value += additionalValue;
+      } else {
+        userWeek.at(-1).data.push({ day: day, value: additionalValue });
+      }
+      await user.save();
+      console.log("Veri güncellendi:", user);
     }
-
-    // Kullanıcı belgesini kaydet
-    await user.save(); 
-    console.log("Veri güncellendi:", user);
-    return;
-   
   } catch (error) {
     console.error("Güncelleme hatası:", error);
   }
@@ -55,22 +48,6 @@ export const updateDailyData = async (userId, additionalValue) => {
 
 
 
-export const getUserTotalPoints = async (userId) => {
-  try {
-    const user = await User.findOne({ _id: userId });
-
-    if (!user) {
-      console.log("Kullanıcı bulunamadı.");
-      return 0;
-    }
-
-    console.log(`Kullanıcının toplam puanı: ${user.totalPoints}`);
-    return user.totalPoints;
-  } catch (error) {
-    console.error("Toplam puan hesaplama hatası:", error);
-    return 0;
-  }
-};
 
 
 
@@ -80,7 +57,7 @@ export const getAllUsersTotalPoints = async () => {
     const users = await User.find({}, "username totalPoints").lean();
 
     if (!users || users.length === 0) {
-      return { message: "No users found", users: [], success: false };
+      return { message: "No users found", success: false };
     }
 
     return { users, success: true };
@@ -112,7 +89,7 @@ export const updateTotalPoints = async (userId) => {
     await user.save();
 
     console.log(`✅ Kullanıcının toplam puanı güncellendi: ${newTotalPoints}`);
-    return newTotalPoints;
+    return { "status": true, message: "veriEklendi ${newTotalPoints} " }
   } catch (error) {
     console.error("❌ Total points güncellenirken hata oluştu:", error);
     throw error;

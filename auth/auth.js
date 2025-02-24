@@ -40,7 +40,7 @@ router.post('/register', async (req, res) => {
     });
 
     // Kullanıcıyı veritabanına kaydet
-    await user.save();
+     user.save();
 
     // Başarılı kayıt yanıtı gönder
     res.status(201).json({ message: 'User registered successfully' });
