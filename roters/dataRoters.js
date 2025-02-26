@@ -36,29 +36,31 @@ export const verifyToken = (req, res, next) => {
 
 
 
+
 route.post("/addPoint", verifyToken, async (req, res) => {
-    const { value } = req.body;
+  const { value } = req.body;
+  if (!value) {
+    return res.status(400).json({ message: "Eksik parametre", success: false });
+  }
 
-    if (!value) {
-        return res.status(401).json({ message: "eksik parametre", success: false });
+  try {
+    const userId = req.userId;
+    const updateResult = await upDatePoint(userId, value);
+
+    if (!updateResult.success) {
+      return res.status(500).json({ message: "Güncelleme başarısız", error: updateResult.error, success: false });
     }
 
-  
-    try {
-      const userId = req.userId;
-      // Kullanıcıya ait mevcut mesaj geçmişini getirme
-      const user = await User.findById(userId).exec();
-        
- 
-       upDatePoint(userId , value) ; 
-      
-       res.status(200).json({ message: "Message saved successfully", data: user, success: true });
-  
-    } catch (err) {
-      console.error("Error generating or saving message:", err); // Hata mesajını konsolda da göster
-      res.status(500).json({ message: "Server error", error: err.message, success: false });
-    }
-  });
+    return res.status(200).json({ message: "Puan güncellendi", data: updateResult.user, success: true });
+  } catch (err) {
+    console.error("Sunucu hatası:", err);
+    return res.status(500).json({ message: "Sunucu hatası", error: err.message, success: false });
+  }
+});
+
+
+
+
 
   route.get("/getAllUsersTotalPoints", verifyToken, async (req, res) => {
     try {

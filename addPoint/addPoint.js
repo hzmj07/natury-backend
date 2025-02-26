@@ -9,43 +9,52 @@ const day = getTodayDay();
 
 
 
+
 export const upDatePoint = async (userId, additionalValue) => {
   try {
-    // Kullanıcıyı bul
     const user = await User.findById(userId);
     if (!user) {
       throw new Error("Kullanıcı bulunamadı");
     }
 
     let userWeek = user.userData.weeks;
+    const lastWeek = userWeek.length > 0 ? userWeek[userWeek.length - 1] : null;
 
-    if (userWeek.length === 0 || userWeek.at(-1).start.toISOString() !== weekStart.toISOString()) {
-      // Yeni hafta işlemleri
-      console.log("yeni hafta ");
-      const week = {
+    if (!lastWeek || new Date(lastWeek.start).getTime() !== weekStart.getTime()) {
+      // Yeni hafta başlatma işlemi
+      const newWeek = {
         start: weekStart,
         end: new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000),
-        data: [{ day: day, value: additionalValue }]
+        data: [{ day, value: additionalValue }]
       };
-      user.userData.weeks.push(week);
-      await user.save();
-      console.log("yeni veri eklendi");
+
+      await User.findByIdAndUpdate(
+        userId,
+        { $push: { "userData.weeks": newWeek } },
+        { new: true }
+      );
     } else {
-      // Geçerli haftaya ekleme işlemleri
-      const dayData = userWeek.at(-1).data.find((d) => d.day === day);
+      // Var olan haftayı güncelleme işlemi
+      const dayData = lastWeek.data.find((d) => d.day === day);
       if (dayData) {
         dayData.value += additionalValue;
       } else {
-        userWeek.at(-1).data.push({ day: day, value: additionalValue });
+        lastWeek.data.push({ day, value: additionalValue });
       }
-      await user.save();
-      console.log("Veri güncellendi:", user);
+
+      await User.findOneAndUpdate(
+        { _id: userId, "userData.weeks.start": lastWeek.start },
+        { $set: { "userData.weeks.$.data": lastWeek.data } },
+        { new: true }
+      );
     }
+    await updateTotalPoints(userId);
+    return { success: true };
   } catch (error) {
     console.error("Güncelleme hatası:", error);
+    return { success: false, error: error.message };
   }
 };
-
 
 
 
@@ -54,7 +63,7 @@ export const upDatePoint = async (userId, additionalValue) => {
 export const getAllUsersTotalPoints = async () => {
   try {
     // Sadece username ve totalPoints alanlarını al
-    const users = await User.find({}, "username totalPoints").lean();
+    const users = await User.find({}, "username userData.totalPoints").lean();
 
     if (!users || users.length === 0) {
       return { message: "No users found", success: false };
@@ -80,12 +89,12 @@ export const updateTotalPoints = async (userId) => {
     }
 
     // Yeni totalPoints hesapla
-    const newTotalPoints = user.weeks.reduce((total, week) => {
+    const newTotalPoints = user.userData.weeks.reduce((total, week) => {
       return total + week.data.reduce((weekTotal, day) => weekTotal + day.value, 0);
     }, 0);
 
     // totalPoints'i güncelle ve kaydet
-    user.totalPoints = newTotalPoints;
+    user.userData.totalPoints = newTotalPoints;
     await user.save();
 
     console.log(`✅ Kullanıcının toplam puanı güncellendi: ${newTotalPoints}`);

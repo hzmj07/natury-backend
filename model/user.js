@@ -52,17 +52,7 @@ const userSchema = new mongoose.Schema(
 
 // **Her kayıttan önce totalPoints güncelle**
 // **Kayıttan sonra totalPoints güncelle**
-userSchema.post("save", async function () {
-  try {
-    // userData içindeki totalPoints'i güncelle
-    this.userData.totalPoints = this.userData.weeks.reduce((total, week) => {
-      return total + week.data.reduce((weekTotal, day) => weekTotal + day.value, 0);
-    }, 0);
-    await this.save(); // TotalPoints güncellenip kaydedilecek
-  } catch (error) {
-    console.error("❌ Total points güncellenirken hata oluştu:", error);
-  }
-})
+
 
 // Kullanıcı Modelini Oluştur
 export const User = mongoose.model("User", userSchema, "users");
