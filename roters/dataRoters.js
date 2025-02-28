@@ -5,7 +5,7 @@ import { User } from "../model/user.js";
 import dotenv from "dotenv";
 dotenv.config();
 const route = express.Router();
-import { upDatePoint , getAllUsersTotalPoints  , updateTotalPoints} from "../addPoint/addPoint.js";
+import { upDatePoint , getAllUsersTotalPoints  , updateTotalPoints , getUserData} from "../addPoint/addPoint.js";
 // API anahtarınızı buraya ekleyin
 
 
@@ -65,6 +65,22 @@ route.post("/addPoint", verifyToken, async (req, res) => {
   route.get("/getAllUsersTotalPoints", verifyToken, async (req, res) => {
     try {
       const data = await getAllUsersTotalPoints();
+      console.log(data);
+      
+    
+      res.status(200).json({ message: "Message saved successfully", data: data , success: true });
+    } catch (err) {
+      console.error("Error generating or saving message:", err); // Hata mesajını konsolda da göster
+      res.status(500).json({ message: "Server error", error: err.message, success: false });
+    }
+  });
+
+
+
+  route.get("/getUserData", verifyToken, async (req, res) => {
+    try {
+      const userId = req.userId;
+      const data = await getUserData(userId);
       console.log(data);
       
     

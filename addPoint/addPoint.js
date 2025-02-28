@@ -104,3 +104,14 @@ export const updateTotalPoints = async (userId) => {
     throw error;
   }
 };
+
+
+export const getUserData = async (userId) => {
+  try {
+      const user = await User.findById(userId, 'userData'); // Sadece name ve email alanlarını getir
+      console.log(user);
+      return user
+  } catch (error) {
+      console.error('Hata:', error);
+  }
+};
