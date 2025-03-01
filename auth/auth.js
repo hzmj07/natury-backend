@@ -20,13 +20,13 @@ router.post('/register', async (req, res) => {
     // E-posta ile mevcut kullanıcıyı kontrol et
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(402).json({ message: 'User already exists' });
     }
 
     // Kullanıcı adının benzersiz olduğunu kontrol et
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
-      return res.status(400).json({ message: 'Username already exists' });
+      return res.status(402).json({ message: 'Username already exists' });
     }
 
     // Şifreyi hashle
@@ -43,7 +43,7 @@ router.post('/register', async (req, res) => {
      user.save();
 
     // Başarılı kayıt yanıtı gönder
-    res.status(201).json({ message: 'User registered successfully' });
+    res.status(201).json({ message: 'User registered successfully' , user : user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -62,7 +62,7 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(402).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     // Şifre doğrulama

@@ -97,10 +97,10 @@ export const updateTotalPoints = async (userId) => {
     user.userData.totalPoints = newTotalPoints;
     await user.save();
 
-    console.log(`✅ Kullanıcının toplam puanı güncellendi: ${newTotalPoints}`);
+    console.log(` Kullanıcının toplam puanı güncellendi: ${newTotalPoints}`);
     return { "status": true, message: "veriEklendi ${newTotalPoints} " }
   } catch (error) {
-    console.error("❌ Total points güncellenirken hata oluştu:", error);
+    console.error(" Total points güncellenirken hata oluştu:", error);
     throw error;
   }
 };
