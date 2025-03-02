@@ -9,6 +9,60 @@ const day = getTodayDay();
 
 
 
+export const upDateEnergy = async (userId, energy) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("Kullanıcı bulunamadı");
+    }
+
+    // Eğer userData.recoveredEnergy yoksa, sıfırla başlat.
+    if (!user.userData.recoveredEnergy) {
+      user.userData.recoveredEnergy = 0;
+    }
+    console.log(energy);
+    
+    // recoveredEnergy'yi güncellemeden önce doğru şekilde toplama yapalım.
+    const currentEnergy = user.userData.recoveredEnergy;
+
+    user.userData.recoveredEnergy = currentEnergy + energy;
+    console.log("dataaaaa" ,user.userData.recoveredEnergy );
+    
+    // Kullanıcıyı güncelle.
+    await user.save();
+    return { success: true };
+  } catch (error) {
+    console.error(error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+export const upDateTree = async (userId, trees) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("Kullanıcı bulunamadı");
+    }
+
+    // Eğer userData.trees yoksa, sıfırla başlat.
+    if (!user.userData.trees) {
+      user.userData.trees = 0;
+    }
+    console.log(trees);
+    
+    // trees'yi güncellemeden önce doğru şekilde toplama yapalım.
+    const currenttrees = user.userData.trees;
+    user.userData.trees = currenttrees + trees;
+    console.log("dataaaaa" ,user.userData.trees );
+    
+    // Kullanıcıyı güncelle.
+    await user.save();
+    return { success: true };
+  } catch (error) {
+    console.error(error.message);
+    return { success: false, error: error.message };
+  }
+}
 
 export const upDatePoint = async (userId, additionalValue) => {
   try {
@@ -69,13 +123,20 @@ export const getAllUsersTotalPoints = async () => {
       return { message: "No users found", success: false };
     }
 
+    // Büyükten küçüğe sırala
+    users.sort((a, b) => (b.userData.totalPoints || 0) - (a.userData.totalPoints || 0));
+
+    // Sıralama ekle
+    users.forEach((user, index) => {
+      user.rank = index + 1; // 1. sıradan başlat
+    });
+
     return { users, success: true };
   } catch (error) {
     console.error("Error fetching users' total points:", error);
     return { message: "Server error", error: error.message, success: false };
   }
 };
-
 
 
 

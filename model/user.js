@@ -39,9 +39,10 @@ const userSchema = new mongoose.Schema(
       default: Date.now,
     },
     userData:{
+      recoveredEnergy:{ type: Number, default: 0 },
       weeks: [weekSchema], // Haftalık veriler
     totalPoints: { type: Number, default: 0 },
-    trees : { type: Number, default: 0 }
+    trees : { type: Number, default: 0 },
     }
      // Toplam puanı kaydet
   },

@@ -5,7 +5,7 @@ import { User } from "../model/user.js";
 import dotenv from "dotenv";
 dotenv.config();
 const route = express.Router();
-import { upDatePoint , getAllUsersTotalPoints  , updateTotalPoints , getUserData} from "../addPoint/addPoint.js";
+import { upDatePoint , getAllUsersTotalPoints   , getUserData , upDateEnergy , upDateTree} from "../addPoint/addPoint.js";
 // API anahtarınızı buraya ekleyin
 
 
@@ -38,7 +38,7 @@ export const verifyToken = (req, res, next) => {
 
 
 route.post("/addPoint", verifyToken, async (req, res) => {
-  const { value } = req.body;
+  const { value , energy} = req.body;
   if (!value) {
     return res.status(400).json({ message: "Eksik parametre", success: false });
   }
@@ -46,8 +46,8 @@ route.post("/addPoint", verifyToken, async (req, res) => {
   try {
     const userId = req.userId;
     const updateResult = await upDatePoint(userId, value);
-
-    if (!updateResult.success) {
+    const updateEnergy  = await upDateEnergy(userId, energy);
+    if (!updateResult.success ||  !updateEnergy.success ) {
       return res.status(500).json({ message: "Güncelleme başarısız", error: updateResult.error, success: false });
     }
 
@@ -58,6 +58,25 @@ route.post("/addPoint", verifyToken, async (req, res) => {
   }
 });
 
+route.post("/addTree", verifyToken, async (req, res) => {
+  const { value } = req.body;
+  if (!value) {
+    return res.status(400).json({ message: "Eksik parametre", success: false });
+  }
+
+  try {
+    const userId = req.userId;
+    const updateResult = await upDateTree(userId, value);
+    if (!updateResult.success  ) {
+      return res.status(500).json({ message: "Güncelleme başarısız", error: updateResult.error, success: false });
+    }
+
+    return res.status(200).json({ message: "Puan güncellendi", data: updateResult.user, success: true });
+  } catch (err) {
+    console.error("Sunucu hatası:", err);
+    return res.status(500).json({ message: "Sunucu hatası", error: err.message, success: false });
+  }
+});
 
 
 
