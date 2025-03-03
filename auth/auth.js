@@ -111,7 +111,7 @@ router.post("/refresh-token", async (req, res) => {
 
   try {
     // Token doğrulama
-    const decoded = jwt.verify(refreshToken, process.env.JWT_ACCESS_TOKEN);
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
 
     // Kullanıcıyı bul
     const user = await User.findById(decoded.id);
