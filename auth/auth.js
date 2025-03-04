@@ -144,5 +144,23 @@ router.post("/refresh-token", async (req, res) => {
   }
 });
 
+router.post("/deleteAccount", async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    console.log(id);
+    if(!id){
+      res.status(402).json({ error: "Hata oluştu" });
+
+    }
+    await User.findByIdAndDelete(id);
+    console.log("kullanıcı durmu mk");
+    
+    res.status(200).json({message : "kullanıcı başarı ile silindi"});
+  } catch (error) {
+    res.status(500).json({ error: "Hata oluştu" });
+  }
+});
+
 
 export default router;

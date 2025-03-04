@@ -8,7 +8,6 @@ const weekStart = getStartOfWeek(today);
 const day = getTodayDay();
 
 
-
 export const upDateEnergy = async (userId, energy) => {
   try {
     const user = await User.findById(userId);
